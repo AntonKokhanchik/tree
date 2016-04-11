@@ -1,4 +1,8 @@
 #pragma once
+#include <stack>
+
+using namespace std;
+
 class tree
 {
 	struct node
@@ -10,10 +14,14 @@ class tree
 
 	node* root;
 
+	typedef node* (*function)(node* subroot, int key);
+
 	node* add(node* subroot, int key);
 	node* remove(node* subroot, int key);
-	node* search(node* subroot, int key, node* (tree::*func)(node* subroot, int key));
+	node* search(node* subroot, int key, function func);
 	node* find(node* subroot, int key);
+	int height(node* subroot);
+	void clear(node*subroot);
 
 public:
 	tree();
@@ -27,15 +35,18 @@ public:
 
 	class iterator
 	{
-		node* pointer;
+		node* data;
+		stack<node*> stack;
+
 	public:
 		iterator(tree tree);
 
-		iterator forward();
-		iterator backward();
+		int operator[](iterator& iterator);
+		iterator direct();
+		void direct_constructor();
+		iterator inverse();
 		iterator symmetric();
-
-		int get_key();
+		iterator width();
 	};
 };
 

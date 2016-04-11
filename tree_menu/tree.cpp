@@ -21,17 +21,17 @@ void tree::add(int key)
 //удаление элемента по ключу
 void tree::remove(int key)
 {
-	node* (tree::*f)(node*, int) = remove;
+	node* (tree::*f)(node*, int) = &remove;
 	root = search(root, key, f);
 }
 
 //поиск элемента
 bool tree::find(int key)
 {
-	node* (tree::*f)(node*, int) = find;
+	node* (tree::*f)(node*, int) = &find;
 	try
 	{
-		root = search(root, key, f);
+		search(root, key, f);
 	}
 	catch (char* exc)
 	{
@@ -44,8 +44,7 @@ bool tree::find(int key)
 }
 
 //ищет элемент по ключу, вызывает нужный метод (удаление, вставка, ...)
-tree::node* tree::search(node* subroot, int key, 
-						node* (tree::*func)(node* subroot, int key))
+tree::node* tree::search(node* subroot, int key, function func)
 {
 	if (key < subroot->key)
 		subroot = subroot->left;
@@ -79,11 +78,13 @@ tree::node* tree::remove(node* subroot, int key)
 	node* l = subroot->left;
 	delete subroot;
 
-	node* tmp = l;
-	while (tmp->right)
-		tmp = tmp->right;
-	tmp->right = r;
-
+	if (r)
+	{
+		node* tmp = l;
+		while (tmp->right)
+			tmp = tmp->right;
+		tmp->right = r;
+	}
 	return l;
 }
 
@@ -93,4 +94,104 @@ tree::node * tree::find(node * subroot, int key)
 	if (!subroot)
 		throw "элемент не найден";
 	throw "элемент найден";
+}
+
+//нахождение высоты дерева
+int tree::height()
+{
+	return height(root);
+}
+
+//рекурсивное нахождение высоты дерева
+int tree::height(node* subroot)
+{
+	int left_height = 0;
+	int right_height = 0;
+
+	if(subroot->left)
+		left_height += height(subroot->left);
+
+	if(subroot->right)
+		right_height += height(subroot->right);
+
+	if (right_height >= left_height)
+		return right_height + 1;
+	else
+		return left_height + 1;
+}
+
+//очистка дерева
+void tree::clear()
+{
+	clear(root);
+	root = NULL;
+}
+
+void tree::clear(node* subroot)
+{
+	if (subroot->right)
+		clear(subroot->right);
+	if (subroot->left)
+		clear(subroot->left);
+	delete subroot;
+}
+
+tree::iterator::iterator(tree tree)
+{
+	data = tree.root;
+	stack.push(data);
+}
+
+int tree::iterator::operator[](iterator & iterator)
+{
+	return data->key;
+}
+
+void tree::iterator::direct_constructor()
+{
+	data = stack.top();
+	stack.pop();
+
+	direct_constructor(data);
+}
+
+tree::iterator tree::iterator::direct()
+{
+	if (stack.empty())
+	{
+		data = NULL;
+		return  *this;
+	}
+
+	data = stack.top();
+	stack.pop();
+
+	if (data->right)
+		stack.push(data->right);
+	if (data->left)
+		stack.push(data->left);
+
+	return *this;
+}
+
+tree::iterator tree::iterator::inverse()
+{
+	if (stack.empty())
+	{
+		data = NULL;
+		return  *this;
+	}
+
+	data = stack.top();
+	stack.pop();
+
+	while(data->left)
+
+
+	if (data->right)
+		stack.push(data->right);
+	if (data->left)
+		stack.push(data->left);
+
+	return *this;
 }
